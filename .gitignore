@@ -1,0 +1,24 @@
+# --- Python virtual environment (machine-specific, large) ---
+.venv/
+venv/
+env/
+
+# --- Python bytecode / caches ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# --- Secrets / local config ---
+.env
+.env.*
+
+# --- Generated data (created at runtime, not source code) ---
+data/chunks/
+data/metrics/
+
+# --- Editor / OS noise ---
+.vscode/
+.idea/
+.DS_Store
+*.log
