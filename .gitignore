@@ -16,6 +16,7 @@ __pycache__/
 # --- Generated data (created at runtime, not source code) ---
 data/chunks/
 data/metrics/
+data/vector_store
 
 # --- Editor / OS noise ---
 .vscode/

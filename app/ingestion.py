@@ -4,6 +4,7 @@ import uuid
 import logging
 from typing import List, Dict
 from app.chunking import chunk_text
+from app import embeddings, vector_store
 
 
 logger = logging.getLogger("edgeclaw")
@@ -65,11 +66,20 @@ def ingest_file(path: str) -> Dict:
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(records, f, indent=2, ensure_ascii=False)
     logger.info("Ingested '%s' -> %d chunks (doc_id=%s)", source, len(records), doc_id)
+
+    chunked_texts = []
+    for i in range(0, len(records)):
+        chunked_texts.append(records[i]["text"])
+
+    embedded_texts = embeddings.embed_texts(chunked_texts)  # returns List[List[float]]
+    num_records = vector_store.add_chunks(records , embedded_texts)  #adds to collection and return num of records
+
     return {
         "doc_id": doc_id,
         "source": source,
         "num_chunks": len(records),
         "saved_to": out_path,
+        "num_embedded" : num_records
     }
 
 

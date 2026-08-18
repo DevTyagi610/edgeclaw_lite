@@ -1,9 +1,10 @@
 import logging
+from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from app.backends.ollama_backend import OllamaBackend
 from app.ingestion import ingest_file, get_chunks
-
+from app import retriever, prompt_builder
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("edgeclaw")
@@ -27,6 +28,8 @@ class ChatResponse(BaseModel):
     backend: str
     model: str
     latency_ms: float
+    sources : List[dict]
+    num_context_chunks : int
 
 @app.get("/health")  # -> decoreator : means when someone calls GET /health, run below func
 def health():
@@ -45,12 +48,23 @@ def chat(request: ChatRequest):
             detail="Ollama is not reachable. Is the Ollama service running?",
         )
     
-    # 2. Ask the real model (no retrieval/routing yet — that's later).
-    result = backend.generate(request.query)
+    # 2. retrieve context → build a grounded prompt → ask the model → 
+    # return answer + sources
+    chunks = retriever.retrieve(request.query, top_k= 3)
+    prompt = prompt_builder.build_rag_prompt(request.query , chunks)    
+    result = backend.generate(prompt)
 
     # 3. If the model call itself failed, report it clearly.
     if result.error:
         raise HTTPException(status_code=502, detail=f"Model failed: {result.error}")
+
+    source = []
+    for chunk in chunks :
+        source.append({
+            "source" : chunk["source"],
+            "chunk_id" : chunk["chunk_id"],
+            "distance" : chunk["distance"]
+        })
     
     # 4. Return the real answer plus useful info.
     return ChatResponse(
@@ -59,6 +73,8 @@ def chat(request: ChatRequest):
         backend=result.backend,
         model=result.model,
         latency_ms=result.latency_ms,
+        sources= source,
+        num_context_chunks = len(chunks)
     )
 
 # When someone sends a POST request to /documents/ingest, run the function below

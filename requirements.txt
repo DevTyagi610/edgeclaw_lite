@@ -1,3 +1,5 @@
 fastapi
 uvicorn[standard]
 ollama
+sentence-transformers
+chromadb
