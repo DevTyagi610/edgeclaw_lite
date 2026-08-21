@@ -12,7 +12,7 @@ def get_collection():
     global client
     if client is None: 
         logger.info("Creating a persistent client")
-        client = chromadb.PersistentClient(path= "data/vector_store")        
+        client = chromadb.PersistentClient(path= "data/vector_store")  # open chroma client 
     collection = client.get_or_create_collection("edgeclaw_chunks")
     logger.info("Using the collection: edgeclaw_chunks")
 
@@ -63,7 +63,34 @@ def query(query_embedding: List[float] , top_k=3) -> List[dict]:
 
     return lst
 
+def reset_collection() -> dict : 
 
+    global client   
+    col_names = []
+
+    if client is None :  
+        client = chromadb.PersistentClient(path= "data/vector_store")  # open chroma client 
+
+    col_lst = client.list_collections()
+    for cols in col_lst :
+        col_names.append(cols.name)
+    if "edgeclaw_chunks" in col_names : 
+        logger.info("Deleting collection : edgeclaw_chunks")        
+        client.delete_collection(name="edgeclaw_chunks")       
+
+    new_collection = get_collection()
+
+    return {"name" : new_collection.name, "num_records" : new_collection.count()}
+
+def delete_by_doc_id(doc_id : str) -> int:
     
+    collection = get_collection() 
+    records = collection.get(where={"doc_id" : doc_id})
+    num_records = len(records["ids"])
+    if num_records > 0 :
+        logger.info(f"Deleting {num_records} records by doc_id : {doc_id}")
+        collection.delete(where={"doc_id" : doc_id})
+    else : 
+        logger.info(f"Nothing to delete for doc_id : {doc_id}")
 
-
+    return num_records

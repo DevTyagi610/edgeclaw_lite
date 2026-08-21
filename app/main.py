@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from app.backends.ollama_backend import OllamaBackend
 from app.ingestion import ingest_file, get_chunks
-from app import retriever, prompt_builder
+from app import retriever, prompt_builder, vector_store
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("edgeclaw")
@@ -104,3 +104,13 @@ def documents_chunks():
         for c in chunks[:20]
     ]
     return {"total_chunks": len(chunks), "preview": preview}
+
+# When someone sends a POST request to /documents/reset, run the function below
+@app.post("/documents/reset")
+def documents_reset() -> dict :
+    try:
+        reset_res = vector_store.reset_collection()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Collection Reset failed : {e}") 
+
+    return {"status" : "ok", **reset_res}

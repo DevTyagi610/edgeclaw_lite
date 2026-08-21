@@ -1,6 +1,7 @@
 import os
 import json
 import uuid
+import hashlib
 import logging
 from typing import List, Dict
 from app.chunking import chunk_text
@@ -42,8 +43,12 @@ def ingest_file(path: str) -> Dict:
     text = load_document(path)
     pieces = chunk_text(text)
 
-# uuid.uuid4() generates a random unique id, which we then typescast to str and slice 1st 8 chars
-    doc_id = str(uuid.uuid4())[:8]     
+# using hashlib to create doc_id with absolute path of file
+    abs_path = os.path.abspath(path)
+    doc_id = hashlib.md5(abs_path.encode()).hexdigest()[:8]
+    num_records_deleted = vector_store.delete_by_doc_id(doc_id)
+    logger.info(f"Number of records deleted by doc_id {doc_id} : {num_records_deleted}")
+
     source = os.path.basename(path)    # just the filename, e.g. "sample.md"
     records = []
 
@@ -56,6 +61,9 @@ def ingest_file(path: str) -> Dict:
             "chunk_id": i,
             "text": piece,
         })
+
+    # Remove records in _INGESTED which have same doc_id as current file
+    _INGESTED[:] = [x for x in _INGESTED if x.get("doc_id") != doc_id]
 
     # Add to the in-memory store.
     _INGESTED.extend(records)
