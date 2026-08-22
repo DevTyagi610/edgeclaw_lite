@@ -1,10 +1,11 @@
 import logging
+import datetime
 from typing import List
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from app.backends.ollama_backend import OllamaBackend
 from app.ingestion import ingest_file, get_chunks
-from app import retriever, prompt_builder, vector_store
+from app import retriever, prompt_builder, vector_store, metrics
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("edgeclaw")
@@ -65,6 +66,18 @@ def chat(request: ChatRequest):
             "chunk_id" : chunk["chunk_id"],
             "distance" : chunk["distance"]
         })
+
+    event_metrics = {
+        "timestamp" : datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "query" : request.query,
+        "query_length" : len(request.query),
+        "backend" : result.backend,
+        "model" : result.model,
+        "latency_ms" : result.latency_ms,
+        "num_context_chunks" : len(chunks)
+    }
+
+    metrics.log_chat_event(event_metrics)
     
     # 4. Return the real answer plus useful info.
     return ChatResponse(
