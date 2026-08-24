@@ -3,3 +3,5 @@ uvicorn[standard]
 ollama
 sentence-transformers
 chromadb
+pyyaml
+requests

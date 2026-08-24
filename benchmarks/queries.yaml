@@ -1,0 +1,18 @@
+- id: wand_final
+  query: What wand did Harry finally get?
+  keywords:
+  - holly
+  - phoenix
+  - eleven
+
+- id: wand_shop_owner
+  query: What was the name of owner of the wand shop
+  keywords:
+  - Ollivander
+
+- id: phoenix_scar
+  query: What is the connection between Harry's wand and his scar? 
+  keywords:
+  - phoenix
+  - feather
+  - brother

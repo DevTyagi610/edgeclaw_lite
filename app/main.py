@@ -32,7 +32,7 @@ class ChatResponse(BaseModel):
     sources : List[dict]
     num_context_chunks : int
 
-@app.get("/health")  # -> decoreator : means when someone calls GET /health, run below func
+@app.get("/health")  # -> decorator : means when someone calls GET /health, run below func
 def health():
     # Calling is_available() func of obj backend to check if Ollama is available
     return {"status": "ok", "backend_available": backend.is_available()}  

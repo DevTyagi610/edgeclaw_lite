@@ -17,6 +17,7 @@ __pycache__/
 data/chunks/
 data/metrics/
 data/vector_store
+benchmarks/results.csv
 
 # --- Editor / OS noise ---
 .vscode/
