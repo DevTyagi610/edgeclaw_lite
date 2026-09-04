@@ -4,13 +4,16 @@ import requests
 import argparse
 import statistics
 import logging
-import sys 
+import sys
 
 logging.basicConfig(level=logging.INFO) 
 logger = logging.getLogger("edgeclaw")
 
+# Creating a benchmark standalone function which takes yaml file, endpoints, 
+# csv file and write in csv file
 def run_benchmark(queries_path : str, server_url: str, out_csv: str) -> dict :
 
+    #Load the yaml file data
     with open(queries_path, "r", encoding="utf-8") as f :
         data = yaml.safe_load(f)
 
@@ -18,6 +21,7 @@ def run_benchmark(queries_path : str, server_url: str, out_csv: str) -> dict :
     health = server_url + "/health"
     rows = []
 
+    #Check for health of LLM , getting response from /health endpoint
     try : 
         resp = requests.get(health)
         resp.raise_for_status()
@@ -26,6 +30,7 @@ def run_benchmark(queries_path : str, server_url: str, out_csv: str) -> dict :
         print("Error message", file=sys.stderr)
         return {}
 
+    # Getting resp from /chat endpoint and adding details to csv_dict
     for entry in data :
         payload = {"query" : entry["query"]}
 
@@ -44,13 +49,16 @@ def run_benchmark(queries_path : str, server_url: str, out_csv: str) -> dict :
                         "model" : None,
                         "total_keywords" : len(entry["keywords"]),
                         "keywords_matched" : 0,
-                        "answer_preview" :  f"<ERROR: {str(e)[:120]}>"
+                        "answer_preview" :  f"<ERROR: {str(e)[:120]}>",
+                        "route" : None,
+                        "route_reason" : None
                     }
             rows.append(csv_dict)
             continue
 
         keywords_matched = 0
 
+        #Appending info to rows of csv file via csv_dict
         ans_lower = body["answer"].lower()
         for keyword in entry["keywords"] : 
             if keyword.lower() in ans_lower:
@@ -64,14 +72,16 @@ def run_benchmark(queries_path : str, server_url: str, out_csv: str) -> dict :
             "model" : body["model"],
             "total_keywords" : len(entry["keywords"]),
             "keywords_matched" : keywords_matched,
-            "answer_preview" : body["answer"][:120]
+            "answer_preview" : body["answer"][:120],
+            "route" : body["route"],
+            "route_reason" : body["route_reason"]
         }
         rows.append(csv_dict)
     
-
+    # Writing the values in csv file
     with open(out_csv, 'w' , newline = '',  encoding="utf-8") as csvfile :
-        fieldnames = ["id", "query", "latency_ms", "num_context_chunks", "backend",
-                      "model", "total_keywords", "keywords_matched", "answer_preview"]
+        fieldnames = ["id", "query", "latency_ms", "num_context_chunks", "backend", "model", 
+                      "total_keywords", "keywords_matched", "answer_preview", "route", "route_reason"]
         writer = csv.DictWriter(csvfile, fieldnames= fieldnames)
         writer.writeheader()
         writer.writerows(rows)
@@ -83,7 +93,7 @@ def run_benchmark(queries_path : str, server_url: str, out_csv: str) -> dict :
         avg_latency_ms = statistics.mean(latency)
     return {"rows" : len(rows), "avg_latency_ms" : avg_latency_ms , "csv" : out_csv }
     
-    
+# Logic for calling run_benchmark standalone
 if __name__ == "__main__":
     parser= argparse.ArgumentParser(description="Run Edgeclaw benchmark against a running server")
     parser.add_argument("--queries" , default="benchmarks/queries.yaml", 

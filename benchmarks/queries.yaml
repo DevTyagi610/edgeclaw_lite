@@ -16,3 +16,19 @@
   - phoenix
   - feather
   - brother
+
+- id : wand_summary
+  query: Summarize the Ollivander shop scene in one paragraph
+  keywords:
+  - holly
+  - phoenix 
+  - feather
+
+- id: long_story
+  query: >
+    Tell me everything about the wand shop, Harry, Mr Ollivander, the phoenix feather core, 
+    the brother wand connection, and why the wand chose Harry
+  keywords:
+  - Ollivander
+  - phoenix
+  - brother

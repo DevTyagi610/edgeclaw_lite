@@ -1,4 +1,4 @@
-
+# Created a rule to classify the query to its route with reason
 def classify(query: str) -> dict :
     qlen = len(query.strip())
     if qlen == 0 :
