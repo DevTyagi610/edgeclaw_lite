@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from app.backends.ollama_backend import OllamaBackend
 from app.ingestion import ingest_file, get_chunks
-from app import retriever, prompt_builder, vector_store, metrics
+from app import retriever, prompt_builder, vector_store, metrics, router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("edgeclaw")
@@ -31,6 +31,8 @@ class ChatResponse(BaseModel):
     latency_ms: float
     sources : List[dict]
     num_context_chunks : int
+    route: str
+    route_reason: str
 
 @app.get("/health")  # -> decorator : means when someone calls GET /health, run below func
 def health():
@@ -48,14 +50,21 @@ def chat(request: ChatRequest):
             status_code=503,
             detail="Ollama is not reachable. Is the Ollama service running?",
         )
-    
-    # 2. retrieve context → build a grounded prompt → ask the model → 
-    # return answer + sources
+
+    # 2. retrieve context -> get the route → build a grounded prompt → 
+    # ask the model → return answer + sources
     chunks = retriever.retrieve(request.query, top_k= 3)
-    prompt = prompt_builder.build_rag_prompt(request.query , chunks)    
+
+    # 3. Getting the query route and reason for the route
+    context_size = 0
+    for c  in chunks : 
+        context_size = context_size + len(c["text"]) 
+    route_dict = router.route(request.query, context_size)
+
+    prompt = prompt_builder.build_rag_prompt(request.query , chunks)  
     result = backend.generate(prompt)
 
-    # 3. If the model call itself failed, report it clearly.
+    # 4. If the model call itself failed, report it clearly.
     if result.error:
         raise HTTPException(status_code=502, detail=f"Model failed: {result.error}")
 
@@ -70,24 +79,28 @@ def chat(request: ChatRequest):
     event_metrics = {
         "timestamp" : datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "query" : request.query,
-        "query_length" : len(request.query),
+        "query_length" : route_dict["query_length"],
         "backend" : result.backend,
         "model" : result.model,
         "latency_ms" : result.latency_ms,
-        "num_context_chunks" : len(chunks)
+        "num_context_chunks" : len(chunks),
+        "route" : route_dict["route"],
+        "route_reason" : route_dict["reason"]
     }
 
     metrics.log_chat_event(event_metrics)
     
-    # 4. Return the real answer plus useful info.
+    # 5. Return the real answer plus useful info.
     return ChatResponse(
-        answer=result.text,
-        query_length=len(request.query),
-        backend=result.backend,
-        model=result.model,
-        latency_ms=result.latency_ms,
-        sources= source,
-        num_context_chunks = len(chunks)
+        answer = result.text,
+        query_length = route_dict["query_length"],
+        backend = result.backend,
+        model = result.model,
+        latency_ms = result.latency_ms,
+        sources = source,
+        num_context_chunks = len(chunks),
+        route = route_dict["route"],
+        route_reason = route_dict["reason"]
     )
 
 # When someone sends a POST request to /documents/ingest, run the function below
