@@ -12,7 +12,7 @@ Harry tried – but he had hardly raised the wand when it, too, was snatched bac
 
 “No, no – here, ebony and unicorn hair, eight and a half inches, springy. Go on, go on, try it out.”
 
-Harry tried. And tried. He had no idea what Mr Ollicander was waiting for. The pile of tried wands was mounting higher and higher on the spindly chair, but the more wands Mr Ollivander pulled from the shelves, the happier he seemed to become.
+Harry tried. And tried. He had no idea what Mr Ollivander was waiting for. The pile of tried wands was mounting higher and higher on the spindly chair, but the more wands Mr Ollivander pulled from the shelves, the happier he seemed to become.
 
 “Tricky customer, eh? Not to worry, we’ll find the perfect match here somewhere – I wonder now – yes, why not – unusual combination – holly and phoenix feather, eleven inches, nice and supple.”
 

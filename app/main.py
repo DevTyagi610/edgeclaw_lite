@@ -33,6 +33,8 @@ class ChatResponse(BaseModel):
     num_context_chunks : int
     route: str
     route_reason: str
+    p_strong_wins : float | None = None
+    alpha : float | None = None
 
 @app.get("/health")  # -> decorator : means when someone calls GET /health, run below func
 def health():
@@ -60,7 +62,6 @@ def chat(request: ChatRequest):
     for c  in chunks : 
         context_size = context_size + len(c["text"]) 
     route_dict = router.route(request.query, context_size)
-
     prompt = prompt_builder.build_rag_prompt(request.query , chunks)  
     result = backend.generate(prompt)
 
@@ -85,7 +86,9 @@ def chat(request: ChatRequest):
         "latency_ms" : result.latency_ms,
         "num_context_chunks" : len(chunks),
         "route" : route_dict["route"],
-        "route_reason" : route_dict["reason"]
+        "route_reason" : route_dict["reason"],
+        "p_strong_wins" : route_dict.get("p_strong_wins"),
+        "alpha" : route_dict.get("alpha")
     }
 
     metrics.log_chat_event(event_metrics)
@@ -100,7 +103,9 @@ def chat(request: ChatRequest):
         sources = source,
         num_context_chunks = len(chunks),
         route = route_dict["route"],
-        route_reason = route_dict["reason"]
+        route_reason = route_dict["reason"],
+        p_strong_wins = route_dict.get("p_strong_wins"),
+        alpha = route_dict.get("alpha")
     )
 
 # When someone sends a POST request to /documents/ingest, run the function below

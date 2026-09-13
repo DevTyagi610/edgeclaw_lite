@@ -1,0 +1,40 @@
+{"query" : "What is capital of India?" , "label": "weak_wins" , "notes": "Basic trivial question", "category": "trivia"}
+{"query" : "What is the meaning of the word 'ephemeral'?" , "label": "weak_wins" , "notes": "vocab lookup", "category": "trivia"}
+{"query" : "What is the difference between list and dictionary in python?" , "label": "weak_wins" , "notes": "Trivial differentiation question", "category": "analysis"}
+{"query" : "Summarize the 1st book of Harry Potter" , "label": "strong_wins" , "notes": "Needs summarizing", "category": "summarize"}
+{"query" : "How many countries in world?" , "label": "weak_wins" , "notes": "Basic fact check", "category": "trivia"}
+{"query" : "Name the biggest desert in world" , "label": "weak_wins" , "notes": "Basic trivial question", "category": "trivia"}
+{"query" : "Define overfitting" , "label": "weak_wins" , "notes": "Basic ML concept", "category": "trivia"}
+{"query" : "What ML model should be used in a given scenario?" , "label": "strong_wins" , "notes": "Situational, needs analysis", "category": "analysis"}
+{"query" : "Explain Transformers in detail" , "label": "strong_wins" , "notes": "Big model explains in much richer details", "category": "domain"}
+{"query" : "How does namespace work in python?" , "label": "weak_wins" , "notes": "Easy python related question", "category": "domain"}
+{"query" : "Did Snape really hate Harry" , "label": "strong_wins" , "notes": "Needs deeper analysis", "category": "analysis"}
+{"query" : "How addition works?" , "label": "weak_wins" , "notes": "Basic question", "category": "trivia"}
+{"query" : "What is better: Logistic Regression or Decision Tree " , "label": "strong_wins" , "notes": "Needs deeper comparison", "category": "domain"}
+{"query" : "What are symptoms of fever?" , "label": "weak_wins" , "notes": "Basic trivial question", "category": "trivia"}
+{"query" : "Explain how softmax funciton works" , "label": "weak_wins" , "notes": "Very basic ML concept", "category": "domain"}
+{"query" : "Summarize the following paragraph " , "label": "strong_wins" , "notes": "Weak model might give shallow ans", "category": "summarize"}
+{"query" : "What does Ollivander's wand shop look like?" , "label": "tie" , "notes": "Both  models can answer", "category": "trivia"}
+{"query" : "Debate on whether AI will replace humans" , "label": "strong_wins" , "notes": "Deeper analysis is needed", "category": "analysis"}
+{"query" : "Give the following sentence in formal tone" , "label": "weak_wins" , "notes": "Basic rephrasing of sentence", "category": "domain"}
+{"query" : "Design a database schema for a small library management system." , "label": "strong_wins" , "notes": "Need to take design decisions", "category": "analysis"}
+{"query" : "What is currency of Japan?" , "label": "weak_wins" , "notes": "Basic trivial question", "category": "trivia"}
+{"query" : "Find the error in following code snippet" , "label": "tie" , "notes": "Depends on type of bug", "category": "domain"}
+{"query" : "What all wands did Harry try in Ollivander's shop?" , "label": "weak_wins" , "notes": "Basic lookup question", "category": "domain"}
+{"query" : "Give python code for even and odd numbers" , "label": "weak_wins" , "notes": "Basic coding question", "category": "domain"}
+{"query" : "For a given ML model, give code for hyperparameter tuning using all techniques" , "label": "strong_wins" , "notes": "Needs deep coding context", "category": "domain"}
+{"query" : "Explain why Harry's wand was rare? " , "label": "tie" , "notes": "Basic analysis", "category": "domain"}
+{"query" : "Give full roadmap for a project" , "label": "strong_wins" , "notes": "Needs deeper analysis", "category": "analysis"}
+{"query" : "Summarize all the wands Harry tried in Ollivander shop" , "label": "strong_wins" , "notes": "Needs summarization", "category": "summarize"}
+{"query" : "Explain how rain is formed?" , "label": "tie" , "notes": "Both models can work", "category": "trivia"}
+{"query" : "Explain in detail, what is Agentic AI" , "label": "strong_wins" , "notes": "Needs deep analysis", "category": "analysis"}
+{"query" : "Give all synonyms of word summary" , "label": "weak_wins" , "notes": "Basic trivial question", "category": "trivia"}
+{"query" : "Give a weekly exercise plan" , "label": "tie" , "notes": "Both models can work", "category": "domain"}
+{"query" : "Check the logs and codebase and give RCA" , "label": "strong_wins" , "notes": "Needs deep analysis", "category": "analysis"}
+{"query" : "Convert following python code in C" , "label": "tie" , "notes": "Depends on what kind of code", "category": "domain"}
+{"query" : "list all the people in wand shop" , "label": "weak_wins" , "notes": "Basic trivial question", "category": "trivia"}
+{"query" : "What is capital of France" , "label": "weak_wins" , "notes": "Basic trivial question", "category": "trivia"}
+{"query" : "Compare the methods X and Y and give pros and cons of each" , "label": "strong_wins" , "notes": "Comaprison needed", "category": "analysis"}
+{"query" : "Explain TCP and UDP using following doc" , "label": "tie" , "notes": "Depends on complexity of doc", "category": "domain"}
+{"query" : "Explain the Harry Potter and Ollivander scene in short" , "label": "tie" , "notes": "Both models can work great", "category": "domain"}
+{"query" : "summarize and explain the following issue in simple english" , "label": "strong_wins" , "notes": "Sumamrization needed", "category": "summarize"}
