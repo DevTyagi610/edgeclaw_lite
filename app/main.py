@@ -5,17 +5,14 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from app.backends.ollama_backend import OllamaBackend
 from app.ingestion import ingest_file, get_chunks
-from app import retriever, prompt_builder, vector_store, metrics, router
+from app import retriever, prompt_builder, vector_store, metrics, router, backend_registry
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("edgeclaw")
 
 app = FastAPI(title="EdgeClaw Lite", version="0.2.0")  # -> Creating a web server named app
 
-# Create ONE backend instance when the server starts, and reuse it
-# for every request (cheaper than building a new one each time).
-
-backend = OllamaBackend(model="llama3.2:3b")  # -> creating an obj of class OllamaBackend
+default_backend = OllamaBackend(model="llama3.2:3b")  # -> creating an obj of class OllamaBackend
 
 class ChatRequest(BaseModel):
     query: str
@@ -39,33 +36,38 @@ class ChatResponse(BaseModel):
 @app.get("/health")  # -> decorator : means when someone calls GET /health, run below func
 def health():
     # Calling is_available() func of obj backend to check if Ollama is available
-    return {"status": "ok", "backend_available": backend.is_available()}  
+    return {"status": "ok", "backend_available": backend_registry.get_backend("LOCLA_FALLBACK").is_available()}  
 
 # Create POST /chat endpoint and tell FastAPI which response format to use.
 @app.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest):
+def chat(request: ChatRequest) -> ChatResponse:
     logger.info("Chat called with query: %s", request.query)
 
-    # 1. Friendly error if Ollama isn't running.
-    if not backend.is_available():
+    # 1. retrieve context -> get the route → build a grounded prompt → 
+    # ask the model → return answer + sources
+    chunks = retriever.retrieve(request.query, top_k= 3)
+
+    # 2. Getting the query route and reason for the route
+    context_size = 0
+    for c  in chunks : 
+        context_size = context_size + len(c["text"]) 
+    route_dict = router.route(request.query, context_size)
+    
+    # 3. Choosing appropriate backend for promt generation
+    chosen_backend = backend_registry.get_backend(route_dict["route"]) 
+
+    # 4. Friendly error if Ollama isn't running.
+    if not chosen_backend.is_available():
         raise HTTPException(
             status_code=503,
             detail="Ollama is not reachable. Is the Ollama service running?",
         )
 
-    # 2. retrieve context -> get the route → build a grounded prompt → 
-    # ask the model → return answer + sources
-    chunks = retriever.retrieve(request.query, top_k= 3)
+    # Building prompt 
+    prompt = prompt_builder.build_rag_prompt(request.query , chunks)
+    result = chosen_backend.generate(prompt)
 
-    # 3. Getting the query route and reason for the route
-    context_size = 0
-    for c  in chunks : 
-        context_size = context_size + len(c["text"]) 
-    route_dict = router.route(request.query, context_size)
-    prompt = prompt_builder.build_rag_prompt(request.query , chunks)  
-    result = backend.generate(prompt)
-
-    # 4. If the model call itself failed, report it clearly.
+    # 5. If the model call itself failed, report it clearly.
     if result.error:
         raise HTTPException(status_code=502, detail=f"Model failed: {result.error}")
 
@@ -93,7 +95,7 @@ def chat(request: ChatRequest):
 
     metrics.log_chat_event(event_metrics)
     
-    # 5. Return the real answer plus useful info.
+    # 6. Return the real answer plus useful info.
     return ChatResponse(
         answer = result.text,
         query_length = route_dict["query_length"],
