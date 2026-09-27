@@ -5,9 +5,9 @@ from app.backends.base import BaseBackend
 logger = logging.getLogger("edgeclaw")
 
 BACKEND_CONFIG = {
-    "LOCAL_FAST" : {"type": "ollama", "model" : "llama3.2:1b"},
-    "LOCAL_FALLBACK" : {"type": "ollama", "model" : "llama3.2:3b"},
-    "CLOUD" : {"type": "ollama", "model" : "llama3.2:3b"}
+    "LOCAL_FAST" : {"type": "ollama", "model" : "llama3.2:1b", "fallbacks" : ["LOCAL_FALLBACK"]},
+    "LOCAL_FALLBACK" : {"type": "ollama", "model" : "llama3.2:3b", "fallbacks" : ["LOCAL_FAST"]},
+    "CLOUD" : {"type": "ollama", "model" : "llama3.2:3b", "fallbacks" : ["LOCAL_FALLBACK" , "LOCAL_FAST"]}
 }
 
 DEFAULT_LABEL = "LOCAL_FALLBACK"
@@ -33,3 +33,13 @@ def get_backend(route_label: str) -> BaseBackend:
 
 
     return _cache[route_label]
+
+# Getting the fallback chain in one route fails 
+def get_fallback_chain(route_label: str) -> list[str] :
+    if route_label not in BACKEND_CONFIG:
+        logger.warning(f"Invalid label : {route_label}, falling back to Default Label")
+        route_label = DEFAULT_LABEL
+
+    cfg = BACKEND_CONFIG[route_label]    
+
+    return [route_label] + cfg.get("fallbacks", [])
