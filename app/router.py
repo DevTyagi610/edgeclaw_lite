@@ -21,4 +21,16 @@ def route(query: str, context_size: int = 0) -> dict :
     route_dict = classify(query)    
         
     return {**route_dict, "query_length" : qlen, "context_size" : context_size}
-    
+
+# Getting the routing config
+def get_config() -> dict:
+    return {"mode" :ROUTER_MODE, "alpha" : ROUTER_ALPHA}
+
+# Setting the routing config to either SW based or rule based
+def set_config(mode: str, alpha: float) -> dict :
+    global ROUTER_MODE, ROUTER_ALPHA
+    ROUTER_MODE = mode
+    ROUTER_ALPHA = alpha
+
+    logger.info(f"Routing config updated: {ROUTER_MODE}, alpha : {ROUTER_ALPHA}")
+    return get_config()

@@ -163,3 +163,9 @@ def documents_reset() -> dict :
         raise HTTPException(status_code=500, detail=f"Collection Reset failed : {e}") 
 
     return {"status" : "ok", **reset_res}
+
+@app.get("/metrics/recent")
+def metrics_recent(limit:int = 20) -> dict :
+    events = metrics.read_recent(limit)
+
+    return {"count" : len(events), "events" : events}
