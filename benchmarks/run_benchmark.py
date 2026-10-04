@@ -5,17 +5,26 @@ import argparse
 import statistics
 import logging
 import sys
+import datetime
+import os
+import json
 
 logging.basicConfig(level=logging.INFO) 
 logger = logging.getLogger("edgeclaw")
 
 # Creating a benchmark standalone function which takes yaml file, endpoints, 
 # csv file and write in csv file
-def run_benchmark(queries_path : str, server_url: str, out_csv: str) -> dict :
+def run_benchmark(queries_path : str, server_url: str, out_dir: str) -> dict :
 
     #Load the yaml file data
     with open(queries_path, "r", encoding="utf-8") as f :
         data = yaml.safe_load(f)
+
+    timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H-%M-%SZ")
+
+    os.makedirs(out_dir, exist_ok=True)
+    csv_path = os.path.join(out_dir, f"results_{timestamp}.csv")
+    json_path = os.path.join(out_dir, f"results_{timestamp}.json")
 
     url = server_url + "/chat"
     health = server_url + "/health"
@@ -51,7 +60,9 @@ def run_benchmark(queries_path : str, server_url: str, out_csv: str) -> dict :
                         "keywords_matched" : 0,
                         "answer_preview" :  f"<ERROR: {str(e)[:120]}>",
                         "route" : None,
-                        "route_reason" : None
+                        "route_reason" : None,
+                        "fallback_used" : None,
+                        "fallback_reason" : None
                     }
             rows.append(csv_dict)
             continue
@@ -74,24 +85,41 @@ def run_benchmark(queries_path : str, server_url: str, out_csv: str) -> dict :
             "keywords_matched" : keywords_matched,
             "answer_preview" : body["answer"][:120],
             "route" : body["route"],
-            "route_reason" : body["route_reason"]
+            "route_reason" : body["route_reason"],
+            "fallback_used" : body.get("fallback_used"),
+            "fallback_reason" : body.get("fallback_reason")
         }
         rows.append(csv_dict)
     
     # Writing the values in csv file
-    with open(out_csv, 'w' , newline = '',  encoding="utf-8") as csvfile :
+    with open(csv_path, 'w' , newline = '',  encoding="utf-8") as csvfile :
         fieldnames = ["id", "query", "latency_ms", "num_context_chunks", "backend", "model", 
-                      "total_keywords", "keywords_matched", "answer_preview", "route", "route_reason"]
+                      "total_keywords", "keywords_matched", "answer_preview", "route", "route_reason",
+                      "fallback_used", "fallback_reason"]
         writer = csv.DictWriter(csvfile, fieldnames= fieldnames)
         writer.writeheader()
         writer.writerows(rows)
+
+    json_payload = {
+        "timestamp" : timestamp,
+        "server_url" : server_url,
+        "num_rows" : len(rows),
+        "rows" : rows
+    }
+
+    with open(json_path, "w", encoding="utf-8") as json_file:
+        json.dump(json_payload, json_file, indent=2, ensure_ascii=False)
 
     latency = [row["latency_ms"] for row in rows if row["latency_ms"] is not None]
     if len(latency) == 0 :
         avg_latency_ms = None
     else :
         avg_latency_ms = statistics.mean(latency)
-    return {"rows" : len(rows), "avg_latency_ms" : avg_latency_ms , "csv" : out_csv }
+    fallback_count = 0
+    for row in rows :
+        if row.get("fallback_used") is True :
+            fallback_count += 1
+    return {"rows" : len(rows), "avg_latency_ms" : avg_latency_ms , "fallback_count": fallback_count, "csv": csv_path, "json": json_path }
     
 # Logic for calling run_benchmark standalone
 if __name__ == "__main__":
@@ -100,12 +128,13 @@ if __name__ == "__main__":
                         help="Path to YAML file with test queries")
     parser.add_argument("--server", default = "http://127.0.0.1:8000", 
                         help="Base URL of the running EdgeClaw server")
-    parser.add_argument("--out", default = "benchmarks/results.csv", 
-                        help="Path where the results CSV will be written")
+    parser.add_argument("--out", default = "benchmarks/results/", 
+                        help="Path where the results CSV and JSON will be written")
     args = parser.parse_args()
     rows_dict = run_benchmark(args.queries, args.server, args.out)
 
     if not rows_dict:
         print("Benchmark Aborted, check the error above")
     else : 
-        print(f"rows written: {rows_dict['rows']} with avg latency: {rows_dict['avg_latency_ms']} to csv file : {rows_dict['csv']}")
+        print(f"rows written: {rows_dict['rows']} with avg latency: {rows_dict['avg_latency_ms']}, "
+              f" fallbacks : {rows_dict['fallback_count']} to csv file : {rows_dict['csv']}")
