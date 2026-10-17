@@ -30,7 +30,7 @@ def evaluate(eval_path : str, results_json_path: str) -> dict :
         eval_by_id[vals["id"]] = vals
 
     for row in rows_lst :
-        answer = row.get("answer_preview")
+        answer = row.get("answer_full") or row.get("answer_preview")
         row_id = row["id"]
         
         if row["id"] not in eval_by_id :    # Skipped row as eval doesnt exist

@@ -59,6 +59,7 @@ def run_benchmark(queries_path : str, server_url: str, out_dir: str) -> dict :
                         "total_keywords" : len(entry["keywords"]),
                         "keywords_matched" : 0,
                         "answer_preview" :  f"<ERROR: {str(e)[:120]}>",
+                        "answer_full" : None,
                         "route" : None,
                         "route_reason" : None,
                         "fallback_used" : None,
@@ -84,6 +85,7 @@ def run_benchmark(queries_path : str, server_url: str, out_dir: str) -> dict :
             "total_keywords" : len(entry["keywords"]),
             "keywords_matched" : keywords_matched,
             "answer_preview" : body["answer"][:120],
+            "answer_full" : body["answer"],
             "route" : body["route"],
             "route_reason" : body["route_reason"],
             "fallback_used" : body.get("fallback_used"),
@@ -94,8 +96,8 @@ def run_benchmark(queries_path : str, server_url: str, out_dir: str) -> dict :
     # Writing the values in csv file
     with open(csv_path, 'w' , newline = '',  encoding="utf-8") as csvfile :
         fieldnames = ["id", "query", "latency_ms", "num_context_chunks", "backend", "model", 
-                      "total_keywords", "keywords_matched", "answer_preview", "route", "route_reason",
-                      "fallback_used", "fallback_reason"]
+                      "total_keywords", "keywords_matched", "answer_preview", "answer_full", 
+                      "route", "route_reason", "fallback_used", "fallback_reason"]
         writer = csv.DictWriter(csvfile, fieldnames= fieldnames)
         writer.writeheader()
         writer.writerows(rows)
