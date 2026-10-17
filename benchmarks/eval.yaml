@@ -1,0 +1,53 @@
+- id: wand_final
+  category: domain
+  reference_answer: Harry got a holly and phoenix feather wand as final wand 
+  must_contain:
+  - holly
+  - phoenix
+  - eleven
+  must_not_contain:
+  - ebony
+  - maple
+  - Beechwood
+
+- id: wand_shop_owner
+  category: trivia
+  reference_answer: Ollivander is the owner of the wand shop
+  must_contain:
+  - Ollivander
+  must_not_contain:
+  - Harry
+  - Hagrid
+
+- id: phoenix_scar
+  category: analyze 
+  reference_answer: The phoenix whose tail feather is in Harry's wand gave one other feather, which is in the wand that gave Harry his scar, making the two wands "brothers." 
+  must_contain:
+  - phoenix
+  - feather
+  - brother
+  must_not_contain:
+  - dragon
+  - unicorn
+
+- id: wand_summary
+  category: summarize
+  reference_answer: Harry tried several wands at Ollivander's shop. Each was taken back until he tried holly and phoenix feather, which worked.
+  must_contain:
+  - holly
+  - phoenix 
+  - Ollivander
+  must_not_contain: []
+
+
+- id: long_story
+  category: analyze
+  reference_answer: >
+     Covers Harry's trip to Ollivander's, trying multiple wands, 
+     settling on holly and phoenix feather, and that the wand's phoenix shares a feather with Voldemort's wand (the brother connection)
+  must_contain:
+  - Ollivander
+  - phoenix
+  - brother
+  must_not_contain:
+  - ebony
