@@ -4,10 +4,6 @@ A local-first Retrieval-Augmented Generation (RAG) service with pluggable query
 routing, multi-backend dispatch, fallback logic, metrics logging, benchmarking,
 and manual evaluation.
 
-Built end-to-end to bridge theoretical ML/DL knowledge and practical AI
-engineering: a measurable, resumeable project where every piece of plumbing
-was built from scratch and every behavior is observable.
-
 ## Features
 
 - **End-to-end RAG pipeline** — document ingestion → chunking → embeddings →
